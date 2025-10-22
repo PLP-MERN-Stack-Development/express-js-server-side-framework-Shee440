@@ -1,0 +1,472 @@
+### Products RESTful API
+
+A comprehensive RESTful API built with Express.js for managing products with full CRUD operations, authentication, validation, and advanced features.
+
+## Features
+
+- ✅ Full CRUD operations for products
+- ✅ Authentication with API keys
+- ✅ Request validation and logging
+- ✅ Comprehensive error handling
+- ✅ Filtering, pagination, and search
+- ✅ Product statistics
+- ✅ Request logging
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
+
+1. **Navigate to project directory**
+   ```bash
+   cd Express-API
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the server**
+   ```bash
+   # Development mode with auto-restart
+   npm run dev
+   
+   # Production mode
+   npm start
+   ```
+
+4. **Test the API**
+   Open your browser and visit: `http://localhost:3001`
+
+## API Documentation
+
+### Base URL
+```
+http://localhost:3001
+```
+
+### Authentication
+Protected routes (POST, PUT, DELETE) require an `X-API-Key` header with the value: `secret-api-key-123`
+
+### Response Format
+All responses are in JSON format. Error responses follow this structure:
+```json
+{
+  "error": {
+    "message": "Error description",
+    "statusCode": 400,
+    "timestamp": "2023-11-15T10:30:00.000Z"
+  }
+}
+```
+
+## API Endpoints
+
+### 🏠 Root Endpoint
+
+**GET /**
+- Description: Welcome message and API documentation
+- Authentication: None
+
+**Example Request:**
+```bash
+curl http://localhost:3001/
+```
+
+**Example Response:**
+```json
+{
+  "message": "Welcome to the Product API!",
+  "endpoints": {
+    "getAllProducts": "GET /api/products",
+    "getProduct": "GET /api/products/:id",
+    "createProduct": "POST /api/products (requires X-API-Key header)",
+    "updateProduct": "PUT /api/products/:id (requires X-API-Key header)",
+    "deleteProduct": "DELETE /api/products/:id (requires X-API-Key header)",
+    "searchProducts": "GET /api/products/search?q=term",
+    "getStats": "GET /api/products/stats"
+  }
+}
+```
+
+### 📋 Product Management
+
+#### GET /api/products
+- Description: Get all products with filtering and pagination
+- Authentication: None
+- Query Parameters:
+  - `category` (optional): Filter by category
+  - `inStock` (optional): Filter by stock status (true/false)
+  - `minPrice` (optional): Minimum price
+  - `maxPrice` (optional): Maximum price
+  - `page` (optional): Page number (default: 1)
+  - `limit` (optional): Items per page (default: 10)
+
+**Example Request:**
+```bash
+curl "http://localhost:3001/api/products?category=electronics&inStock=true&page=1&limit=5"
+```
+
+**Example Response:**
+```json
+{
+  "page": 1,
+  "limit": 5,
+  "total": 2,
+  "totalPages": 1,
+  "data": [
+    {
+      "id": "1",
+      "name": "Laptop",
+      "description": "High-performance laptop with 16GB RAM",
+      "price": 1200,
+      "category": "electronics",
+      "inStock": true
+    },
+    {
+      "id": "2",
+      "name": "Smartphone",
+      "description": "Latest model with 128GB storage",
+      "price": 800,
+      "category": "electronics",
+      "inStock": true
+    }
+  ]
+}
+```
+
+#### GET /api/products/:id
+- Description: Get a specific product by ID
+- Authentication: None
+
+**Example Request:**
+```bash
+curl http://localhost:3001/api/products/1
+```
+
+**Example Response:**
+```json
+{
+  "id": "1",
+  "name": "Laptop",
+  "description": "High-performance laptop with 16GB RAM",
+  "price": 1200,
+  "category": "electronics",
+  "inStock": true
+}
+```
+
+#### POST /api/products
+- Description: Create a new product
+- Authentication: Required (X-API-Key header)
+- Body: All fields required
+
+**Example Request:**
+```bash
+curl -X POST http://localhost:3001/api/products \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: secret-api-key-123" \
+  -d '{
+    "name": "Tablet",
+    "description": "10-inch tablet with stylus",
+    "price": 299.99,
+    "category": "electronics",
+    "inStock": true
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "message": "Product created successfully",
+  "product": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Tablet",
+    "description": "10-inch tablet with stylus",
+    "price": 299.99,
+    "category": "electronics",
+    "inStock": true
+  }
+}
+```
+
+#### PUT /api/products/:id
+- Description: Update an existing product
+- Authentication: Required (X-API-Key header)
+- Body: Partial updates allowed
+
+**Example Request:**
+```bash
+curl -X PUT http://localhost:3001/api/products/1 \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: secret-api-key-123" \
+  -d '{
+    "price": 1299.99,
+    "name": "Gaming Laptop"
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "message": "Product updated successfully",
+  "product": {
+    "id": "1",
+    "name": "Gaming Laptop",
+    "description": "High-performance laptop with 16GB RAM",
+    "price": 1299.99,
+    "category": "electronics",
+    "inStock": true
+  }
+}
+```
+
+#### DELETE /api/products/:id
+- Description: Delete a product
+- Authentication: Required (X-API-Key header)
+
+**Example Request:**
+```bash
+curl -X DELETE http://localhost:3001/api/products/1 \
+  -H "X-API-Key: secret-api-key-123"
+```
+
+**Example Response:**
+```json
+{
+  "message": "Product deleted successfully",
+  "product": {
+    "id": "1",
+    "name": "Laptop",
+    "description": "High-performance laptop with 16GB RAM",
+    "price": 1200,
+    "category": "electronics",
+    "inStock": true
+  }
+}
+```
+
+### 🔍 Advanced Features
+
+#### GET /api/products/search
+- Description: Search products by name or description
+- Authentication: None
+- Query Parameters:
+  - `q` (required): Search term
+
+**Example Request:**
+```bash
+curl "http://localhost:3001/api/products/search?q=laptop"
+```
+
+**Example Response:**
+```json
+{
+  "searchTerm": "laptop",
+  "count": 1,
+  "data": [
+    {
+      "id": "1",
+      "name": "Laptop",
+      "description": "High-performance laptop with 16GB RAM",
+      "price": 1200,
+      "category": "electronics",
+      "inStock": true
+    }
+  ]
+}
+```
+
+#### GET /api/products/stats
+- Description: Get product statistics
+- Authentication: None
+
+**Example Request:**
+```bash
+curl http://localhost:3001/api/products/stats
+```
+
+**Example Response:**
+```json
+{
+  "totalProducts": 5,
+  "inStock": 3,
+  "outOfStock": 2,
+  "categories": {
+    "electronics": 2,
+    "kitchen": 1,
+    "furniture": 2
+  },
+  "priceRange": {
+    "min": 50,
+    "max": 1200,
+    "average": 456
+  }
+}
+```
+
+## Error Handling
+
+The API returns standardized error responses:
+
+### Common Error Status Codes:
+
+- `400` - Validation Error (invalid input data)
+- `401` - Unauthorized (missing or invalid API key)
+- `404` - Not Found (resource doesn't exist)
+- `500` - Internal Server Error
+
+**Example Error Response:**
+```json
+{
+  "error": {
+    "message": "Product with ID 999 does not exist",
+    "statusCode": 404,
+    "timestamp": "2023-11-15T10:30:00.000Z"
+  }
+}
+```
+
+## Testing with cURL Examples
+
+### Test All Public Endpoints:
+```bash
+# Root endpoint
+curl http://localhost:3001/
+
+# All products
+curl http://localhost:3001/api/products
+
+# Specific product
+curl http://localhost:3001/api/products/1
+
+# Search products
+curl "http://localhost:3001/api/products/search?q=coffee"
+
+# Product statistics
+curl http://localhost:3001/api/products/stats
+
+# Filter products
+curl "http://localhost:3001/api/products?category=electronics&inStock=true"
+```
+
+### Test Protected Endpoints:
+```bash
+# Create product
+curl -X POST http://localhost:3001/api/products \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: secret-api-key-123" \
+  -d '{
+    "name": "Headphones",
+    "description": "Wireless noise-cancelling headphones",
+    "price": 199.99,
+    "category": "electronics",
+    "inStock": true
+  }'
+
+# Update product
+curl -X PUT http://localhost:3001/api/products/2 \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: secret-api-key-123" \
+  -d '{"price": 899.99}'
+
+# Delete product
+curl -X DELETE http://localhost:3001/api/products/3 \
+  -H "X-API-Key: secret-api-key-123"
+```
+
+## Product Data Model
+
+### Product Fields:
+- `id` (string): Unique identifier (auto-generated)
+- `name` (string): Product name (required)
+- `description` (string): Product description (required)
+- `price` (number): Product price (required, non-negative)
+- `category` (string): Product category (required)
+- `inStock` (boolean): Stock availability (default: true)
+
+### Example Product Object:
+```json
+{
+  "id": "1",
+  "name": "Laptop",
+  "description": "High-performance laptop with 16GB RAM",
+  "price": 1200,
+  "category": "electronics",
+  "inStock": true
+}
+```
+
+## Project Structure
+
+```
+Express-API/
+├── server.js          # Main application file
+├── package.json       # Dependencies and scripts
+├── node_modules/      # Installed dependencies
+└── README.md          # This file
+```
+
+## Dependencies
+
+- **express**: Web framework for Node.js
+- **uuid**: Generate unique identifiers for products
+- **nodemon**: Development tool for auto-restarting server
+
+## Development Scripts
+
+```bash
+# Start development server with auto-restart
+npm run dev
+
+# Start production server
+npm start
+
+# Install dependencies
+npm install
+```
+
+## Troubleshooting
+
+### Common Issues:
+
+1. **Port already in use**: Change port in server.js from 3001 to another number
+2. **Module not found**: Run `npm install` to install dependencies
+3. **Authentication failed**: Ensure `X-API-Key: secret-api-key-123` header is included
+4. **Validation errors**: Check that all required fields are provided and valid
+
+### Server Logs:
+The server logs all requests in the format:
+```
+[2023-11-15T10:30:00.000Z] GET /api/products
+[2023-11-15T10:31:00.000Z] POST /api/products
+```
+
+## API Key Security
+
+For production use:
+1. Store API keys in environment variables
+2. Use proper authentication like JWT tokens
+3. Implement rate limiting
+4. Use HTTPS encryption
+
+## Support
+
+If you encounter any issues:
+1. Check that all dependencies are installed with `npm install`
+2. Ensure port 3001 is available (or change the port in server.js)
+3. Verify the API key is correct for protected routes
+4. Check the console for detailed error messages
+
+## License
+
+This project is for educational purposes as part of the Express.js assignment.
+
+---
+
+**Happy Coding! 🚀**
